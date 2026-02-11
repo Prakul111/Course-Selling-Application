@@ -1,9 +1,10 @@
 const { Router } = require("express")
-const { AdminModal } = require("../db")
+const { AdminModal, CourseModel } = require("../db")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const { z } = require("zod")
 const dotenv = require("dotenv")
+const { adminMiddleware } = require("../middleware/admin")
 dotenv.config()
 
 
@@ -77,9 +78,23 @@ adminRouter.post("/signin", async function (req, res) {
 
 })
 
-adminRouter.post("/course", function (req, res) {
+adminRouter.post("/course", adminMiddleware, async function (req, res) {
+
+    const adminId = req.userId
+    const { title, description, imageUrl, price } = req.body
+
+    const course = await CourseModel.create({
+        title,
+        description,
+        imageUrl,
+        price,
+        creatorId: adminId
+    })
+
     res.json({
-        message: "Admin create"
+        message: "Course created",
+        courseId: course._id
+
     })
 
 })
