@@ -1,11 +1,13 @@
+require("dotenv").config()
+
 const { Router } = require("express")
-const { UserModel } = require("../db")
+const { UserModel, PurchaseModel, CourseModel } = require("../db")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const { z } = require("zod")
+const { userMiddleware } = require("../middleware/user")
 const userRouter = Router()
-const dotenv = require("dotenv")
-dotenv.config()
+
 
 
 
@@ -76,17 +78,27 @@ userRouter.post("/signin", async function (req, res) {
 
 })
 
-userRouter.get("/purchase", function (req, res) {
+userRouter.get("/purchases", userMiddleware, async function (req, res) {
+
+    const userId = req.userId
+
+    const purchases = await PurchaseModel.find({
+        userId
+    })
+
+    const courseData = await CourseModel.find({
+        _id: purchases.map(x => x.courseId)
+    })
+
+
     res.json({
-        message: "You are signed in"
+        purchases,
+        courseData
     })
 
 })
 
-function auth(req, res, next) {
 
-
-}
 
 
 module.exports = {

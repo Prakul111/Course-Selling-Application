@@ -114,7 +114,7 @@ adminRouter.put("/course", adminMiddleware, async function (req, res) {
     })
 
     res.json({
-        message: "Course created",
+        message: "Course Updated",
         courseId: course._id
 
     })
