@@ -1,11 +1,11 @@
+require('dotenv').config()
+
 const { Router } = require("express")
-const { AdminModal, CourseModel } = require("../db")
+const { AdminModel, CourseModel } = require("../db")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const { z } = require("zod")
-const dotenv = require("dotenv")
 const { adminMiddleware } = require("../middleware/admin")
-dotenv.config()
 
 
 const adminRouter = Router()
@@ -13,7 +13,7 @@ const adminRouter = Router()
 adminRouter.post("/signup", async function (req, res) {
     const admin = z.object({
         email: z.email(),
-        password: z.string().min(6).max(50),
+        password: z.string().min(5).max(50),
         firstName: z.string().min(5).max(50),
         lastName: z.string().min(5).max(50)
 
@@ -32,7 +32,7 @@ adminRouter.post("/signup", async function (req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 5)
 
-    await AdminModal.create({
+    await AdminModel.create({
         email,
         password: hashedPassword,
         firstName,
@@ -48,7 +48,7 @@ adminRouter.post("/signup", async function (req, res) {
 adminRouter.post("/signin", async function (req, res) {
     const { email, password } = req.body;
 
-    const requiredAdmin = await AdminModal.findOne({
+    const requiredAdmin = await AdminModel.findOne({
         email: email,
     })
 
@@ -99,18 +99,42 @@ adminRouter.post("/course", adminMiddleware, async function (req, res) {
 
 })
 
-adminRouter.put("/course", function (req, res) {
-    res.json({
-        message: "Admin create"
+adminRouter.put("/course", adminMiddleware, async function (req, res) {
+    const adminId = req.userId
+    const { title, description, imageUrl, price, courseId } = req.body
+
+    const course = await CourseModel.updateOne({
+        _id: courseId,
+        creatorId: adminId
+    }, {
+        title,
+        description,
+        imageUrl,
+        price,
     })
+
+    res.json({
+        message: "Course created",
+        courseId: course._id
+
+    })
+
 
 })
 
 
 
-adminRouter.get("/course/bulk", function (req, res) {
+adminRouter.get("/course/bulk", adminMiddleware, async function (req, res) {
+
+    const adminId = req.userId
+
+    const courses = await CourseModel.find({
+        creatorId: adminId
+    })
+
     res.json({
-        message: "Admin get bulk course"
+        message: "Admin all course",
+        courses
     })
 
 })

@@ -1,7 +1,6 @@
+require('dotenv').config()
 
 const jwt = require("jsonwebtoken")
-const dotenv = require("dotenv")
-dotenv.config()
 
 function userMiddleware(req, res, next) {
 

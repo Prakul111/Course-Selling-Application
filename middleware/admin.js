@@ -1,7 +1,6 @@
+require('dotenv').config()
 
 const jwt = require("jsonwebtoken")
-const dotenv = require("dotenv")
-dotenv.config()
 
 function adminMiddleware(req, res, next) {
 
@@ -17,9 +16,11 @@ function adminMiddleware(req, res, next) {
         })
     }
 
-
 }
 
 module.exports = {
-    adminMiddleware: adminMiddleware
+    adminMiddleware,
 }
+
+
+
