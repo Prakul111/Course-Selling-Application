@@ -30,17 +30,36 @@ adminRouter.post("/signup", async function (req, res) {
 
     const { email, password, firstName, lastName } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 5)
-
-    await AdminModel.create({
-        email,
-        password: hashedPassword,
+    const adminAlreadyExist = AdminModel.findOne({
         firstName,
-        lastName,
+        lastName
     })
-    res.json({
-        mesage: "You are signed up"
-    })
+
+    if (adminAlreadyExist) {
+        return res.status(400).json({
+            message: "Admin with firstname and lastname already exists"
+        })
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 5)
+        await AdminModel.create({
+            email,
+            password: hashedPassword,
+            firstName,
+            lastName,
+        })
+        res.json({
+            mesage: "You are signed up"
+        })
+
+    } catch (error) {
+        res.status(400).json({
+            message: "Admin already exists"
+        })
+
+    }
+
 
 })
 
@@ -58,8 +77,9 @@ adminRouter.post("/signin", async function (req, res) {
         })
     }
 
-    const passwordMatch = await bcrypt.compare(password, requiredAdmin.password)
 
+
+    const passwordMatch = await bcrypt.compare(password, requiredAdmin.password)
 
     if (passwordMatch) {
         const token = jwt.sign({
@@ -74,6 +94,7 @@ adminRouter.post("/signin", async function (req, res) {
             message: "Wrong Credentials",
         })
     }
+
 
 
 })

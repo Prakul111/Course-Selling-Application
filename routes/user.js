@@ -14,9 +14,9 @@ const userRouter = Router()
 userRouter.post("/signup", async function (req, res) {
     const user = z.object({
         email: z.email(),
-        password: z.string().min(6).max(50),
-        firstName: z.string().min(5).max(50),
-        lastName: z.string().min(5).max(50)
+        password: z.string().max(50),
+        firstName: z.string().max(50),
+        lastName: z.string().max(50)
 
     })
 
@@ -31,17 +31,40 @@ userRouter.post("/signup", async function (req, res) {
 
     const { email, password, firstName, lastName } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 5)
 
-    await UserModel.create({
-        email,
-        password: hashedPassword,
+    const userAlredyExit = await UserModel.findOne({
         firstName,
-        lastName,
+        lastName
     })
-    res.json({
-        mesage: "You are signed up"
-    })
+
+    if (userAlredyExit) {
+        return res.status(400).json({
+            message: "User exist with firstname and lastname"
+        })
+    }
+
+
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 5)
+
+        await UserModel.create({
+            email,
+            password: hashedPassword,
+            firstName,
+            lastName,
+        })
+        res.json({
+            mesage: "You are signed up"
+        })
+
+    } catch (e) {
+        res.status(400).json({
+            message: "User already exists"
+        })
+    }
+
+
 
 })
 
